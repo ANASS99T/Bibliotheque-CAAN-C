@@ -1,3 +1,0 @@
-2:PHYSIQUE
-1:MATH
-9:yyyyy

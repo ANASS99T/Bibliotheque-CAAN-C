@@ -82,7 +82,7 @@ void SauvegarderOffre(offre *liste ,char * nom_fichier_client)
 	
 	while(courant!=NULL){
 		fprintf(f,"%d:",courant->idOffre);
-		fprintf(f,"%f:",courant->tarif);
+		fprintf(f,"%.2f:",courant->tarif);
 		fprintf(f,"%s:",courant->designation) ;
 		if(courant->suivant!=NULL)
 		    fprintf(f,"%d\n",courant->nombreLivres) ;
@@ -100,10 +100,11 @@ void afficherOffre(char *ficher){
 	printf("--------------------vos offres sont ---------------------");
 	while(courant != NULL){
 	printf("\n---------------------------------------------------------\n");
-	printf("Id de l'offre' est \t\t\t: %d\t\t:\n",courant->idOffre);
-	printf("designation de l'offre' est \t\t: %s\t\t:\n",courant->designation);
-	printf("tarif de l'offre est \t\t\t: %.2f\t\t:\n",courant->tarif);
-	printf("nmblivres de l'offre est \t\t: %d\t\t:\n",courant->nombreLivres);
+	printf("Id de l\'offre \t\t : %d\n",courant->idOffre);
+	printf("designation de l\'offre \t : %s\n",courant->designation);
+	printf("tarif de l\'offre \t : %.2f\n",courant->tarif);
+	printf("nomber de livre autorise : %d\n",courant->nombreLivres);
+	printf("---------------------------------------------------------\n");
 	courant = courant->suivant;
  }
 }
@@ -111,6 +112,7 @@ void afficherOffre(char *ficher){
 void modifierOffre(){
 	int idOffre;
 	int choix;
+	int choix2 = 4;
 	offre *liste;
 	offre *courant;
 	liste=ChargerOffre("offre.txt");
@@ -133,13 +135,30 @@ void modifierOffre(){
 		return;
 	}
 	else if(courant->idOffre == idOffre){
-		printf("donner les nouvelle valeures :\n");
-		printf("designation :");
-		courant->designation = SaisirChaine(stdin);
-		printf("nbrLivres :");
-		scanf("%d",&courant->nombreLivres);
-		printf("tarif :");
-		scanf("%f",&courant->tarif);
+		do{
+			printf("1) Pour changer le nom de l\'offre\n2) pour changer le nombre de livres autorise\n3)pour changer le tarif\n0)exit");
+			printf("\nvotre choix : ");
+			scanf("%d", &choix2);
+		}while(choix2 != 0 && choix2 != 1 && choix2 != 2 && choix2 != 3);
+		switch (choix2)
+		{
+			case 0:
+				return;
+			case 1:
+				printf("\nEntrer le nouveau nom : ");
+				getchar();
+				courant->designation = SaisirChaine(stdin);
+				break;
+			case 2:
+				printf("\nEntrer le nouveau nombre de livres autorise : ");
+				scanf("%d",&courant->nombreLivres);
+				break;
+			case 3:
+				printf("\nEntrer le nouveau tarif : ");
+				scanf("%f",&courant->tarif);
+				break;
+		}
+		
 	}
 	//pour donner le choix au utilisateur de sauvgarder les changments au de ne pas le faire
 	do{
@@ -162,14 +181,15 @@ void ajouterOffre2(){
 	int idOffre,nbrLivres,choix;
 	char *designation;
 	float tarif;
+	idOffre = getId("offre.txt") + 1;
 	liste=ChargerOffre("offre.txt");
 	printf("donner les informations de l'offre a ajoutrer \n");
-	printf("idOffre :");
-	scanf("%d",&idOffre);
+//	printf("idOffre :");
+//	scanf("%d",&idOffre);
 	getchar();
-	printf("designation :");
+	printf("Nom de l\'offre :");
 	designation = SaisirChaine(stdin);
-	printf("nbrLivres :");
+	printf("nombre de livres autorise :");
 	scanf("%d",&nbrLivres);
 	printf("tarif :");
 	scanf("%f",&tarif);

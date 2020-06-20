@@ -50,15 +50,15 @@ void AddExemplaire() // Ajouter un exemplaire
 	if(FileEmpty1(f) == 1)
 	{
 		fprintf(f,"%d:%d:%d", New -> IdExempl, New -> IdLivre, New -> dispo);
-		printf("l\'exemplaire est bien ajoute");
 		fclose(f);
+		printf("l\'exemplaire ajouter a le Id suivant :%d\n",New->IdExempl);
 		return;
 	}
 	else
 	{
 		fprintf(f,"\n%d:%d:%d", New -> IdExempl, New -> IdLivre, New -> dispo);
-		printf("l\'exemplaire est bien ajoute");
 		fclose(f);
+		printf("l\'exemplaire ajouter a le Id suivant :%d\n",New->IdExempl);
 		return;
 	}		
 	
@@ -135,7 +135,9 @@ void RefrechExemplaires(Exempl* list,char * file) // mis a jour le ficher Exempl
 {
 	if(list == NULL)
 	{
-		printf("la list est vide");
+		//printf("la list est vide");
+			FILE * f = fopen(file , "w");
+			fclose(f);
 		return;
 	}
 	FILE * f = fopen(file , "w");
@@ -156,7 +158,7 @@ void RefrechExemplaires(Exempl* list,char * file) // mis a jour le ficher Exempl
 		else if (curent -> next == NULL)
 		{
 			fprintf(f, "%d",  curent -> dispo);
-	}
+	    }
 		curent = curent -> next;
 	}
 	fclose(f);
@@ -188,7 +190,9 @@ void changerInfoExemplaires(int id) // modifier les info un exemplaire dapres so
 						do{
 						printf("Inserer le nouveau ID Livre: ");
 						scanf("%d", &info);
-					}while(info < 0 );
+						if (!livre_exsite(info))
+						   printf("y'a pas une livre avec cet id \n");
+					}while(!livre_exsite(info));
 						E -> IdLivre = info;
 						break;
 					case 2 :
@@ -228,86 +232,59 @@ void changerInfoExemplaires(int id) // modifier les info un exemplaire dapres so
 	
 }
 
-void deleteExemplaire(int id) // Supprimer un Exemplaire dapres son ID
-{
+void deleteExemplaire(){
+	int idExemplaire;
 	int choix;
-	Exempl *AllExempls = getExempls("Exemplaire.txt");
-	Exempl *CExempl; // Curent Exemplaire
-	Exempl *PExempl = NULL; // Previous Exemplaire
-	
-	if(AllExempls == NULL){
-	printf("Il n\'y a pas des exemplaires");
-	return  ;
+	do{
+		printf("donner le ID exemplaire que vous voulez supprimer : ");
+		scanf("%d",&idExemplaire);
+		getchar();
+		if(!existe_exemplaire(idExemplaire))
+		  printf("cet exemplaire n'existe pas!!\n");
+	}while(!existe_exemplaire(idExemplaire));
+	Exempl *liste;
+	Exempl *courant,*precourant;
+	liste = getExempls("Exemplaire.txt");
+	if(liste == NULL){
+		printf("\nAucun exemplaire dans le fichier! \n");
+		return ;
 	}
 	else{
-		for(CExempl = AllExempls; CExempl != NULL; PExempl = CExempl, CExempl = CExempl -> next)
-		{
-			if(CExempl->IdExempl  == id)
-			{
-				if(PExempl == NULL)
-				{
-					AllExempls = CExempl -> next;
-				do{
-					printf("voulez vous sauvgarder les changements ? \n");
-					printf("entez 1 pour valider ou 0 sinon : ");
-					scanf("%d",&choix);
-				    }while((choix != 0) && (choix != 1));
-					if(choix == 1){
-				    	RefrechExemplaires(AllExempls,"Exemplaire.txt");
-				    	printf("vous avez sauvgarder.\n");
-				    	return ;
-				    }
-				    else if (choix == 0){
-				         printf("vous n'avez pas sauvgarder.\n");
-				         return ;
-				     }
-				         
-				}
-				else
-				{
-					if(CExempl -> next == NULL)
-					{
-						PExempl -> next = NULL;
-				do{
-					printf("voulez vous sauvgarder les changements ? \n");
-					printf("entez 1 pour valider ou 0 sinon : ");
-					scanf("%d",&choix);
-				    }while((choix != 0) && (choix != 1));
-					if(choix == 1){
-				    	RefrechExemplaires(AllExempls,"Exemplaire.txt");
-				    	printf("vous avez sauvgarder.\n");
-				    	return ;
-				    }
-				    else if (choix == 0){
-				         printf("vous n'avez pas sauvgarder.\n");
-				         return ;
-				     }
-					}
-					else
-					{
-						PExempl -> next = CExempl -> next;
-				do{
-					printf("voulez vous sauvgarder les changements ? \n");
-					printf("entez 1 pour valider ou 0 sinon : ");
-					scanf("%d",&choix);
-				    }while((choix != 0) && (choix != 1));
-					if(choix == 1){
-				    	RefrechExemplaires(AllExempls,"Exemplaire.txt");
-				    	printf("vous avez sauvgarder.\n");
-				    	return ;
-				    }
-				    else if (choix == 0){
-				         printf("vous n'avez pas sauvgarder.\n");
-				         return ;
-				     }
-					}
-				}
-			}
+	getchar();
+	if (liste->IdExempl == idExemplaire){
+	precourant=liste;
+	liste =liste->next;
+	free(precourant);
+    }
+    else{
+    	courant = liste;
+    	while((courant != NULL) && (courant->IdExempl != idExemplaire))
+	    {
+	    	precourant = courant;
+	    	courant =courant->next;
+	    }
+	    if(courant == NULL){
+	    	printf("\nAucun exemplaire ne possede cet id ");
+	    	return;
 		}
+	   	precourant->next=courant->next;
+	   	free(courant);
+	   }
 	}
-	printf("l\'exemplaire n\'existe pas");
-	return ;
+	do{
+	printf("\nvoulez vous sauvgarder les changements ? \n");
+	printf("entrez 1 pour valider ou 0 sinon : ");
+	scanf("%d",&choix);
+    }while((choix != 0) && (choix != 1));
+	if(choix == 1){
+    	RefrechExemplaires(liste,"Exemplaire.txt");
+    	printf("\nexemplaire supprimer avec succes !\n");
+    }
+    else if (choix == 0)
+         printf("\nsuppression abandonne!\n");
 }
+
+
 
 void ChercherExemplaire()
 {
@@ -428,16 +405,51 @@ void changer_dispo(int id, int dispo)
 		if(E->IdExempl == id)
 		{
 			E->dispo = dispo;
-			printf("\nChangement effectue.\n");
-			return;
+			RefrechExemplaires(All,"Exemplaire.txt");
+			return;		
 		}
 		E = E->next;
 	}
-	printf("\nCette id n\'existe pas\n");
-	return;
-	
 }
 
+int dispo(int id){
+	Exempl *All;
+	Exempl *E;
+	All = getExempls("Exemplaire.txt");
+	E = All;
+	if(E == NULL)
+	{
+		return 0;
+	}
+	while((E != NULL) && (E->IdExempl != id))
+	{
+		E = E->next;
+	}
+	if (E == NULL)
+	return 0;
+    else if ((E->IdExempl == id) && (E->dispo == 1))
+      return 1;
+    else if((E->IdExempl == id) && (E->dispo == 0))
+       return 0;
+}
 
+int existe_exemplaire(int id){
+	Exempl *All;
+	Exempl *E;
+	All = getExempls("Exemplaire.txt");
+	E = All;
+	if(E == NULL)
+	{
+		return 0;
+	}
+	while((E != NULL) && (E->IdExempl != id))
+	{
+		E = E->next;
+	}
+	if (E == NULL)
+	  return 0;
+    else if (E->IdExempl == id)
+      return 1;
 
+}
 

@@ -8,6 +8,8 @@ typedef struct Auteur{
 	struct Auteur *suivant;
 }Auteur;
 
+
+
 Auteur *Ajouterauteurliste(Auteur *l ,int idauteur,char *nomauteur){
 	Auteur *nouveau = (Auteur*)malloc(sizeof(Auteur));
 	if(nouveau == NULL){
@@ -74,15 +76,29 @@ void afficherlesauteurs(char *fich){
 	Auteur *l = NULL;
 	l = chargerauteur(fich);
 	Auteur *courant =l;
-	printf("--------------------Touts les auteurs de la bibliotheque ---------------------");
+	printf("\nLa liste des auteurs\n");
 	while(courant != NULL){
 	printf("\n---------------------------------------------------------\n");
-	printf("Id du livre \t\t\t:%d\t\t\n",courant->idauteur);
-	printf("Nom du livre \t\t\t:%s\t\t\n",courant->nomauteur);
+	printf("Id de l\'auteur \t\t:%d\t\t\n",courant->idauteur);
+	printf("Nom de l\'auteur \t:%s\t\t\n",courant->nomauteur);
 	courant = courant->suivant;
  }
 }
-
+int auteur_existe(char * Nom)
+{
+	Auteur *l = chargerauteur("Auteurs.txt");
+	Auteur *courant =l;
+	
+	while(courant != NULL)
+	{
+		if(strcmp(courant->nomauteur, Nom) == 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
+	
+}
 void Ajouterauteurlistefich(){
 	Auteur *l ;
 	int idauteur,choix;
@@ -95,10 +111,11 @@ void Ajouterauteurlistefich(){
 		i++;
 		courant2 = courant2->suivant;
 	}
-	printf("ATTENTION! id auteur commence a partir de %3d\n",i+1);
-	printf("\nid auteur :");
-	scanf("%d",&idauteur);
+//	printf("ATTENTION! id auteur commence a partir de %3d\n",i+1);
+//	printf("\nid auteur :");
+//	scanf("%d",&idauteur);
 	getchar();
+	idauteur = i+1;
 	printf("nom auteur :");
     nomauteur = SaisirChaine(stdin);
 	if(l == NULL){
@@ -115,16 +132,13 @@ void Ajouterauteurlistefich(){
 	nouveau->nomauteur = nomauteur;
 	nouveau->suivant = NULL;
 	courant = l;
-	while((courant->suivant!=NULL) && (courant->idauteur != idauteur)){
+	while(courant->suivant!=NULL){
 		courant = courant->suivant;
 	}
-	if(courant->idauteur == idauteur){
-		printf("\nCet auteur existe deja  !\n");
-		return;
+	if(courant->suivant == NULL){
+		courant->suivant=nouveau;
 	}
-	else if(courant->suivant == NULL){
-		 courant->suivant=nouveau;
-	}
+
     }
 	do{
 	printf("\nConfirmer ajout auteur :\n");
@@ -187,7 +201,7 @@ void supprimerauteur(){
 }
 void rechercherauteur(){
 	Auteur *l;
-	int idauteur,choix;
+	int idauteur,choix = 3;
 	char *nomauteur;
 	l = chargerauteur("Auteurs.txt");
 	if(l == NULL){
@@ -196,16 +210,19 @@ void rechercherauteur(){
 	}
 	else{
 	Auteur *courant,*courant2;
+	do
+	{
 	printf("Recherche par id : 1\n");
 	printf("Recherche par nom auteur : 2\n");
+	printf("Exit : 0\n");
 	printf("Votre choix :");
 	scanf("%d",&choix);
-	getchar();
+	}while(choix != 1 && choix != 0 && choix != 2);
 	if(choix == 1){
 		courant = l;
 		printf("Donner id auteur que vous cherchez :");
 		scanf("%d",&idauteur);
-	 while ((courant!=NULL) && (courant->idauteur != idauteur)){
+	while ((courant!=NULL) && (courant->idauteur != idauteur)){
        courant = courant->suivant;
 	}
 	if (courant==NULL){
@@ -220,13 +237,14 @@ void rechercherauteur(){
 	}
 	else if(choix == 2)
 	{   courant = l;
-        printf("Donner le nom de ou des auteurs que vous cherchez:");
+        printf("Donner le nom de ou des auteurs que vous cherchez: ");
+        getchar();
 		nomauteur = SaisirChaine(stdin);
-	   while ((courant!=NULL) && (strcmp(nomauteur,courant->nomauteur ) != 0)){
+	   while ((courant!=NULL) && (strcmp(nomauteur,courant->nomauteur) != 0)){
        courant = courant->suivant;
 	}
 	if (courant==NULL){
-		printf("Cet nom  nexiste pas dans le fichier !\n");
+		printf("Cet nom n\'existe pas dans le fichier !\n");
 		return;
 	}
 	else {
@@ -234,14 +252,20 @@ void rechercherauteur(){
 	{
 	if(strcmp(nomauteur,courant->nomauteur ) == 0)
 	{
-	printf("\n------------Tous les auteurs de ce nom----------------------------\n");
-	printf("Id auteur \t\t\t: %d\t\t\n",courant->idauteur);
-	printf("Nom auteur \t\t\t: %s\t\t\n",courant->nomauteur);
+	printf("\n------------------------------------\n");
+	printf("Id auteur \t: %d\t\n",courant->idauteur);
+	printf("Nom auteur \t: %s\t\n",courant->nomauteur);
+	printf("------------------------------------\n");
 	}
 	 courant = courant->suivant;
 	}
+	printf("\nRecherche termine\n");
      }
     }
+    else if(choix == 0)
+    {
+    	return;
+	}
 }
 }
 

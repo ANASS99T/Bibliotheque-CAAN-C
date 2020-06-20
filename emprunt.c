@@ -7,7 +7,8 @@
 #include <windows.h>
 #include "Offre.h"
 #include "usefulFunctions.h"
-//#include "Client.h"
+#include "Client.h"
+#include "Exemplaire.h"
 struct date {
 	int jour;
 	int moins;
@@ -82,11 +83,18 @@ char *intsToStr(int* tab,int taille){
 //d'exesemplaires correspondants au idOffre passe en parametre
 int *idsExemplaires(int taille){
 	int *ids=(int*)malloc(sizeof(int));
-	int i;
+	int i,tempo;
 	for(i=0;i<taille;i++){
 	    ids=(int*)realloc(ids,(i+1)*sizeof(int));	
+	    do{
 		printf("donner le ID de l'exemplaire %d : ",i+1);
-		scanf("%d",&ids[i]);
+		scanf("%d",&tempo);
+		getchar();
+		if((!existe_exemplaire(tempo)) || (!dispo(tempo)))
+		  printf("cet exemplaire n'existe pas ou il est pas disponible\n");
+		else if((existe_exemplaire(tempo)) && (dispo(tempo)))
+		  ids[i]=tempo;
+	    }while((!existe_exemplaire(tempo)) || (!dispo(tempo)));
 	}
 	return ids;
 }
@@ -94,14 +102,14 @@ int *idsExemplaires(int taille){
 void mettreLesExemplairesIndispo(int *tab,int taille){
 	int i=0;
 	for(i=0;i<taille;i++){
-//		changer_dispo(tab[i],0);
+		changer_dispo(tab[i],0);
 	}
 }
 //pour les exemplaires retournes disponibles
 void mettreLesExemplairesDispo(int *tab,int taille){
 	int i=0;
 	for(i=0;i<taille;i++){
-//		changer_dispo(tab[i],1);
+		changer_dispo(tab[i],1);
 	}
 }
 //fonction qui permet d'ajouter une emprunt en donnant idEmprunt en parametre cette fonction ca va nous aider de charger les donner de fichier
@@ -232,13 +240,13 @@ void ajouterEmprunt2(){
 	   printf("y'a pas une offre avec ce ID\n");
     }while(!chercherOffre(idOffre));
     //cette boucle a  pour but de s'assurer que le idClient exite
-/*	do{
+	do{
 	printf("idClient :");
 	scanf("%d",&idClient);
 	getchar();
 	if(!Client_exist(idClient))
-	   printf("y'a pas une offre avec ce ID\n");
-    }while(!chercherOffre(idOffre));*/
+	   printf("y'a pas un client avec ce ID\n");
+    }while(!Client_exist(idClient));
     
 	ids=idsExemplaires(nombreLivres(idOffre,"offre.txt"));
 	//mettre la date emprunt a la date local
@@ -249,15 +257,15 @@ void ajouterEmprunt2(){
 	dr.jour = 0;
 	dr.moins = 0;
 	dr.annee = 0;
-	//si le ficher est vide on va ajouter notre offre
+	//si le ficher est vide on va ajouter notre emprunt
 	if(liste == NULL){
 		liste = ajouterEmprunt1(liste,idOffre,idClient,ids,de,dr);
+		
 	}
-	//si le fichier n'est pas vide il faut verifier si on a une autre offre avec le meme ID 
-	//ou bien avec les meme informations
+
 	else{
 	emprunt *nouveau = (emprunt*)malloc(sizeof(emprunt));
-	emprunt *courant=liste;
+	emprunt *courant=liste,*precourant;
 	if(nouveau == NULL){
 		printf("erreur dans nouveau\n");
 		return;
@@ -268,28 +276,30 @@ void ajouterEmprunt2(){
 	nouveau->dateEmprunt=de;
 	nouveau->dateRetour=dr;
 	nouveau->suivant=NULL;
-	courant = liste;
-	while(courant->suivant!=NULL ){
+	while(courant!=NULL ){
 		if((courant->idClient == idClient) && (courant->dateRetour.annee == 0))
 		{
 			printf("ce client a deja une ou des livres non retournes \n");
 			return ;
 		}
+		//variable id nous permet d'avoir le dernier idEmprunt pour generie le nouveau idEmprunt en ajoutant 1
+		id=courant->idEmprunt;
+		precourant=courant;
 		courant = courant->suivant;
 	}
-    if(courant->suivant == NULL){
-    	id=courant->idEmprunt;
-    	nouveau->idEmprunt = ++id;
-		courant->suivant=nouveau;
+    if(courant == NULL){
+    	nouveau->idEmprunt=++id;
+		precourant->suivant=nouveau;
 	}
     }
     printf("entrer 1 pour sauvgarder :");
     scanf("%d",&choix);
     if(choix == 1){
     	printf("sauvgarde avec succee !!\n");
+    	mettreLesExemplairesIndispo(ids,nombreLivres(idOffre,"offre.txt"));
        SauvegarderEmprunt(liste ,"emprunt.txt");
        //mettre les exemplaires empruntes indisponible
-   //    mettreLesExemplairesIndispo(ids,nombreLivres(idOffre,"offre.txt"));
+
    }
    else 
       printf("vous avez pas sauvgarder \n");
@@ -316,9 +326,16 @@ void afficherEmprunt(emprunt *liste){
 //fonction qui permet de sauvgarder une liste chainee dans une fichier
 void SauvegarderEmprunt(emprunt *liste ,char * nom_fichier_client)
 {
+	if(liste == NULL){
+		printf("la liste est vide \n");
+		FILE *f =fopen(nom_fichier_client,"w");
+	  fclose(f);
+	  return;
+     }
 	FILE * f = fopen(nom_fichier_client, "w") ;
 	emprunt *courant;
 	courant = liste;
+
 	while(courant!=NULL){
 		fprintf(f,"%d:",courant->idEmprunt);
 		fprintf(f,"%d:",courant->idOffre);
@@ -348,8 +365,7 @@ void livreRetourner(int idClient){
 		   courant->dateRetour.annee = Time.wYear;
 		   //ids et idOffre vont nous survivre pour mettre les exemplaires retournes disponible
 		   ids=courant->idsExemplaires;
-		   idOffre = courant->idOffre;
-		   
+		   idOffre = courant->idOffre; 
 		   break;
 	    }
 	    courant=courant->suivant;
@@ -358,9 +374,10 @@ void livreRetourner(int idClient){
     scanf("%d",&choix);
     if(choix == 1){
     	printf("sauvgarde avec succee !!\n");
+    mettreLesExemplairesDispo(ids,nombreLivres(idOffre,"offre.txt"));
      SauvegarderEmprunt(liste ,"emprunt.txt");
      //mettre les exemplaires retournes disponible
-//     mettreLesExemplairesDispo(ids,nombreLivres(idOffre,"offre.txt"));
+     
    }
    else 
       printf("vous avez pas sauvgarder \n");		
@@ -368,18 +385,18 @@ void livreRetourner(int idClient){
 
 //fonction pour supprimer les emprunts pour les quells les clients ont retourner les livres 
 void supprimerEmprunt()
-{    int choix;
+{    
+   int choix;
 	emprunt *liste=NULL;
    liste=ChargerEmprunt("emprunt.txt");
-emprunt  *courant=liste,*precourant;
+   emprunt  *courant,*precourant;
 
-while (liste->dateRetour.annee!=0){
+while ((liste!=NULL) && (liste->dateRetour.annee!=0)){
 	precourant = liste;
 	liste=liste->suivant;
 	free(precourant);
-	courant=liste;
 }
-
+courant=liste;
 while(courant != NULL)
 {
    if(courant->dateRetour.annee!=0){

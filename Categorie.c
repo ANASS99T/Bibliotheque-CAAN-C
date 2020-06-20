@@ -135,9 +135,10 @@ void Ajoutercategorielistefich(){
 		i++;
 		courant2 = courant2->suivant;
 	}
-	printf("ATTENTION! id categorie commence a partir de %3d\n",i+1);
-	printf("\nid categorie :");
-	scanf("%d",&idcategorie);
+//	printf("ATTENTION! id categorie commence a partir de %3d\n",i+1);
+//	printf("\nid categorie :");
+//	scanf("%d",&idcategorie);
+	idcategorie = i+1;
 	getchar();
 	printf("nom categorie :");
     nomcategorie = SaisirChaine(stdin);
@@ -155,10 +156,10 @@ void Ajoutercategorielistefich(){
 	nouveau->nomcategorie = nomcategorie;
 	nouveau->suivant = NULL;
 	courant = l;
-	while((courant->suivant!=NULL) && (courant->idcategorie != idcategorie)){
+	while((courant->suivant!=NULL) && (strcmp(courant->nomcategorie, nomcategorie) != 0)){
 		courant = courant->suivant;
 	}
-	if(courant->idcategorie == idcategorie){
+	if(strcmp(courant->nomcategorie, nomcategorie) == 0){
 		printf("\nCet auteur existe deja  !\n");
 		return;
 	}
@@ -236,11 +237,13 @@ void recherchercategorie(){
 	}
 	else{
 	Categorie *courant,*courant2;
-	printf("Recherche par id : 1\n");
-	printf("Recherche par le nom de la categorie : 2\n");
-	printf("Votre choix :");
-	scanf("%d",&choix);
-	getchar();
+	do{
+		printf("Recherche par id : 1\n");
+		printf("Recherche par le nom de la categorie : 2\n");
+		printf("Exit: 0\n");
+		printf("Votre choix :");
+		scanf("%d",&choix);
+	}while(choix != 0 && choix != 1 && choix != 2);
 	if(choix == 1){
 		courant = l;
 		printf("Donner id de la categorie que vous cherchez :");
@@ -259,14 +262,16 @@ void recherchercategorie(){
 	}
 	}
 	else if(choix == 2)
-	{   courant = l;
-        printf("Donner le nom de ou des categories que vous cherchez:");
+	{   
+		courant = l;
+		getchar();
+        printf("Donner le nom de ou des categories que vous cherchez: ");
 		nomcategorie = SaisirChaine(stdin);
 	   while ((courant!=NULL) && (strcmp(nomcategorie,courant->nomcategorie) != 0)){
        courant = courant->suivant;
 	}
 	if (courant==NULL){
-		printf("Cet nom  nexiste pas dans le fichier !\n");
+		printf("Cet nom  n\'existe pas dans le fichier !\n");
 		return;
 	}
 	else {
@@ -274,14 +279,21 @@ void recherchercategorie(){
 	{
 	if(strcmp(nomcategorie,courant->nomcategorie ) == 0)
 	{
-	printf("\n------------Toutes les categories de ce nom----------------------------\n");
-	printf("Id auteur \t\t\t: %d\t\t\n",courant->idcategorie);
-	printf("Nom auteur \t\t\t: %s\t\t\n",courant->nomcategorie);
+	printf("\n----------------------------------------\n");
+	printf("Id auteur \t: %d\t\n",courant->idcategorie);
+	printf("Nom auteur \t: %s\t\n",courant->nomcategorie);
+	printf("----------------------------------------\n");
+
 	}
 	 courant = courant->suivant;
 	}
+		printf("\nRecherche terminer.\n");
      }
     }
+    else if (choix == 0)
+    {
+    	return;
+	}
 }
 }
 int existeCategorie(int idCategorie){

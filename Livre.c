@@ -4,7 +4,6 @@
 #include"Categorie.h"
 #include"Auteur.h"
 #include "usefulFunctions.h"
-
 typedef struct Livre{
 	int idlivre;
 	char *titreLivre;
@@ -25,18 +24,18 @@ Livre *AjouterLivreliste(Livre *liste ,int idlivre,char *titre, int idAuteur, in
 	nouveau->idAuteur  = idAuteur;
 	nouveau->idCategorie = idCategorie;
 	nouveau->suivant=NULL;
-	Livre *courant = liste;
+	Livre *courant = liste,*precourant;
 	if(liste == NULL)
 	{
 		liste = nouveau;
 	}
-	else {
-	while(courant->suivant!=NULL)
+	else {	
+	while(courant!=NULL)
 	{
-		courant = courant->suivant;
-		
+		precourant = courant;
+		courant = courant->suivant;	
 	}
-	courant->suivant=nouveau;
+	precourant->suivant=nouveau;
     }
     return liste;
 }
@@ -108,9 +107,7 @@ void afficherlivre(char *fich)
 
 void modifierlivre()
 {
-	int idlivre;
-	int choix;
-	int choix2;
+	int idlivre,idCategorie,idAuteur,choix,choix2;
 	Livre *liste,*courant;
 	liste = Chargerlivre("Livres.txt");
 	if(liste == NULL){
@@ -118,7 +115,7 @@ void modifierlivre()
 		return ;
 	}
 	else{
-	printf("donner ancien id du livre que vous souhaitez modifier : ");
+	printf("donner id du livre que vous souhaitez modifier : ");
 	scanf("%d",&idlivre);
 	getchar();
 	courant = liste; 
@@ -130,9 +127,9 @@ void modifierlivre()
 		return;
 	}
 	else if(courant->idlivre == idlivre) {
-	printf("Modifier le nom du livre : 1\n");
-	printf("Modifier auteur du livre : 2\n");
-	printf("Modifier la categorie du livre : 3\n");
+	printf("Modifier le titre du livre : 1\n");
+	printf("Modifier id auteur du livre : 2\n");
+	printf("Modifier id categorie du livre : 3\n");
 	printf("Votre choix :");
 	scanf("%d",&choix2);
 	getchar();
@@ -143,15 +140,25 @@ void modifierlivre()
 	}
 	else if(choix2 == 2)
 	{
-        printf("Donner le nouveau Id auteur du livre:");
-        scanf("%d",&courant->idAuteur);
+	do{
+        printf("Donner le nouveau id auteur du livre:");
+        scanf("%d",&idAuteur);
         getchar();
+        if(!existeAuteur(idAuteur))
+          printf("ce auteur  n'existe pas \n");
+    }while(!existeAuteur(idAuteur));
+    courant->idAuteur = idAuteur;
 	}
 	else if(choix2 == 3)
-	{
+	{    
+	do{
         printf("Donner le nouveau id categorie du livre:");
-        scanf("%d",&courant->idCategorie);
+        scanf("%d",&idCategorie);
         getchar();
+        if(!existeCategorie(idCategorie))
+          printf("cette categorie n'existe pas \n");
+    }while(!existeCategorie(idCategorie));
+    courant->idCategorie =idCategorie;
 	}
   
 	}
@@ -177,17 +184,21 @@ void AjouterLivrelistefich()
 	char *titre;
 	int idAuteur;
 	int idCategorie;
-	int i ;
+	int i=0;
 	liste = Chargerlivre("Livres.txt");
 	courant = liste;
-	while(courant->suivant!=NULL){
+	while(courant!=NULL){
+		i=courant->idlivre;
 		courant = courant->suivant;
 	}
-	i=courant->idlivre;
 	printf("ATTENTION! id du livre commence a partir de %3d\n",i+1);
+	do{
 	printf("\nid du livre :");
 	scanf("%d",&idlivre);
 	getchar();
+	  if (livre_exsite(idlivre))
+	    printf("il ya un autre livre avec le meme id  deja existe !\n");
+    }while(livre_exsite(idlivre));
 	printf("titre du livre :");
 	titre = SaisirChaine(stdin);
 	do{
@@ -203,7 +214,6 @@ void AjouterLivrelistefich()
     if(existeCategorie(idCategorie) == 0)
        printf("y'a pas une categorie avec ce id \n");
     }while(existeCategorie(idCategorie) == 0);
-    
 
 	if(liste == NULL){
 		liste = AjouterLivreliste(liste,idlivre,titre,idAuteur,idCategorie);
@@ -223,11 +233,7 @@ void AjouterLivrelistefich()
 	while((courant->suivant!=NULL) && (courant->idlivre != idlivre)){
 		courant = courant->suivant;
 	}
-	if(courant->idlivre == idlivre){
-		printf("\nCet id existe deja  !\n");
-		return;
-	}
-	else if ((strcmp(titre,courant->titreLivre) == 0) && (idAuteur == courant->idAuteur) && (idCategorie == courant->idCategorie)){
+	if ((strcmp(titre,courant->titreLivre) == 0) && (idAuteur == courant->idAuteur) && (idCategorie == courant->idCategorie)){
 	 	printf("\nIl existe deja un livre avec les memes informations!\n");
 	 	return;
 	 }
@@ -247,6 +253,8 @@ void AjouterLivrelistefich()
     else if (choix == 0)
          printf("\nAjout abandonne\n");
 }
+
+
 void supprimerlivre()
 {
 	int idlivre;
@@ -312,7 +320,7 @@ void rechercherlivre()
 	else{
 	Livre *courant,*courant2;
 	printf("Recherche par id : 1\n");
-	printf("Recherche par nom du livre : 2\n");
+	printf("Recherche par le titre du livre : 2\n");
 	printf("Recherche par Id d'auteur du livre : 3\n");
 	printf("Recherche par id categorie du livre : 4\n");
 	printf("Votre choix :");
@@ -327,26 +335,26 @@ void rechercherlivre()
        courant = courant->suivant;
 	}
 	if (courant==NULL){
-		printf("Cet  id nexiste pas dans le fichier !\n");
+		printf("Ce id nexiste pas dans le fichier !\n");
 		return;
 	}
 	else{
 	printf("\n---------------------------------------------------------\n");
 	printf("Id du livre \t\t\t: %d\t\t\n",courant->idlivre);
-	printf("Nom du livre \t\t\t: %s\t\t\n",courant->titreLivre);
-    printf("Auteur du livre \t\t: %d\t\t\n",courant->idAuteur);
-    printf("Categorie du livre \t\t: %d\t\t\n",courant->idCategorie);
+	printf("titre du livre \t\t\t: %s\t\t\n",courant->titreLivre);
+    printf("ID auteur du livre \t\t: %d\t\t\n",courant->idAuteur);
+    printf("ID categorie du livre \t\t: %d\t\t\n",courant->idCategorie);
 	}
 	}
 	else if(choix == 2)
 	{   courant = liste;
-        printf("Donner le titre du ou des livres que vous cherchez:");
+        printf("Donner le titre du livre que vous cherchez:");
 		titre = SaisirChaine(stdin);
 	   while ((courant!=NULL) && (strcmp(titre,courant->titreLivre ) != 0)){
        courant = courant->suivant;
 	}
 	if (courant==NULL){
-		printf("Cet nom  nexiste pas dans le fichier !\n");
+		printf("Ce titre n existe pas dans le fichier !\n");
 		return;
 	}
 	else {
@@ -354,7 +362,7 @@ void rechercherlivre()
 	{
 	if(strcmp(titre,courant->titreLivre ) == 0)
 	{
-	printf("\n------------Tous les livres de ce nom----------------------------\n");
+	printf("\n--------------------------------------------------------\n");
 	printf("Id du livre \t\t\t: %d\t\t\n",courant->idlivre);
 	printf("Nom du livre \t\t\t: %s\t\t\n",courant->titreLivre);
     printf("id Auteur du livre \t\t: %d\t\t\n",courant->idAuteur);
@@ -367,7 +375,7 @@ void rechercherlivre()
 		else if(choix == 3)
 	{   courant = liste;
         printf("Donner le id de lauteur que vous cherchez:");
-		scanf("%d",idAuteur);
+		scanf("%d",&idAuteur);
 		getchar();
 	  while ((courant!=NULL) && (idAuteur != courant->idAuteur)){
        courant = courant->suivant;
@@ -381,7 +389,7 @@ void rechercherlivre()
 	{
 	if(idAuteur == courant->idAuteur)
 	{
-	printf("\n---------Tous les livres de cet auteur-----------------------\n");
+	printf("\n------------------------------------------------------\n");
 	printf("Id du livre \t\t\t: %d\t\t\n",courant->idlivre);
 	printf("Nom du livre \t\t\t: %s\t\t\n",courant->titreLivre);
     printf("id Auteur du livre \t\t: %d\t\t\n",courant->idAuteur);
@@ -394,7 +402,7 @@ void rechercherlivre()
 	else if(choix == 4)
 	{   courant = liste;
         printf("Donner le id categorie du ou des livres que vous cherchez:");
-		scanf("%d",idAuteur);
+		scanf("%d",&idCategorie);
 		getchar();
 	    while ((courant!=NULL) && (idCategorie != courant->idCategorie)){
        courant = courant->suivant;
@@ -406,11 +414,11 @@ void rechercherlivre()
 	else {
 	while(courant!=NULL)
 	{
-	if(idCategorie != courant->idCategorie)
+	if(idCategorie == courant->idCategorie)
 	{
 	printf("\n---------------------------------------------------------\n");
 	printf("Id du livre \t\t\t: %d\t\t\n",courant->idlivre);
-	printf("Nom du livre \t\t\t: %s\t\t\n",courant->titreLivre);
+	printf("titre du livre \t\t\t: %s\t\t\n",courant->titreLivre);
     printf("id Auteur du livre \t\t: %d\t\t\n",courant->idAuteur);
     printf("id Categorie du livre \t\t: %d\t\t\n",courant->idCategorie);
 	}

@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #include<string.h>
 #include "usefulFunctions.h"
+
+
 typedef struct SClient
 {
 	int IdClient ;
@@ -11,6 +13,8 @@ typedef struct SClient
 	char * TelClient ;
 	struct SClient * next;
 }Client;
+
+Client * getClients(char* );
 
 int is_empty(Client *C) //Verifier si la liste est vide
 {
@@ -31,6 +35,23 @@ int FileEmpty(FILE *file) // Verifier si le ficher Client est vide
     fseek(file, savedOffset, SEEK_SET);
     return 0;
 }
+
+int Client_existe(char* Nom, char* Prenom, char * Adresse, char* Tel)// existance d'un client par ses informations
+{
+	Client *All = getClients("Client.txt");
+	Client *C;
+	C = All;
+
+	while(C != NULL)
+	{
+		if(strcmp(C->NomClient, Nom) == 0 && strcmp(C->PrenomClient, Prenom) == 0 && strcmp(C->AdresseClient, Adresse) == 0 && strcmp(C->TelClient, Tel) == 0)
+		{
+			return 1;
+		}
+		C = C->next;
+	}
+	return 0;
+} 
 
 void AddClient(char* Nom, char* Prenom, char* Adresse, char* Tel) // ajouter un Client au fichier Client.txt
 {
@@ -53,10 +74,17 @@ void AddClient(char* Nom, char* Prenom, char* Adresse, char* Tel) // ajouter un 
 	}
 	else
 	{
-		fprintf(f,"\n%d:%s:%s:%s:%s", New -> IdClient, New -> NomClient, New -> PrenomClient, New -> AdresseClient, New -> TelClient);
-		printf("%s %s est devenu un client",New -> NomClient,New -> PrenomClient);
-		fclose(f);
-		return ;
+		if(Client_existe(Nom, Prenom, Adresse, Tel) == 0)
+		{
+			fprintf(f,"\n%d:%s:%s:%s:%s", New -> IdClient, New -> NomClient, New -> PrenomClient, New -> AdresseClient, New -> TelClient);
+			printf("%s %s est devenu un client",New -> NomClient,New -> PrenomClient);
+			fclose(f);
+			return ;
+		}
+		else {
+			printf("\nCe Client deja existe.\n");
+			return;
+		}
 	}
 }
 
@@ -122,13 +150,22 @@ void AfficherTousLesClients() // Afficher Tous les clients
 	else{
 		while(Cl != NULL)
 		{
+			if(Cl->IdClient == 0)
+			{
+				printf("\nIl n\'y a pas des clients");
+				return;	
+			}
+			else
+			{
 			printf("--------------------------------------");
 			printf("\nId:\t\t%i\n", Cl -> IdClient);
 			printf("Nom:\t\t%s\n", Cl -> NomClient);
 			printf("Prenom \t\t%s\n", Cl -> PrenomClient);
 			printf("Adresse:\t%s\n", Cl -> AdresseClient);
 			printf("Telephone:\t%s\n", Cl -> TelClient);
+			}
 			Cl = Cl -> next;
+			
 		}
 	}
 	
@@ -139,6 +176,8 @@ void RefrechClients(Client* list,char * file) // mis a jour le ficher Client
 	if(list == NULL)
 	{
 		printf("la list est vide");
+		FILE * f = fopen(file , "w");
+		fclose(f);
 		return;
 	}
 	FILE * f = fopen(file , "w");
@@ -237,7 +276,7 @@ void changerInfoClient(int id) // modifier les info un client dapres son ID
 
 void deleteClient(int id) // Supprimer un client dapres son ID
 {
-	int choix;
+	int choix = 3;
 	Client *AllClients = getClients("Client.txt");
 	Client *CClient; // Curent Client
 	Client *PClient = NULL; // Previous Client
@@ -247,11 +286,32 @@ void deleteClient(int id) // Supprimer un client dapres son ID
 	return  ;
 	}
 	else{
-		for(CClient = AllClients; CClient != NULL; PClient = CClient, CClient = CClient -> next)
+		CClient = AllClients;
+		while(CClient != NULL)
 		{
 			if(CClient -> IdClient == id)
 			{
-				if(PClient == NULL)
+				if(PClient == NULL && CClient->next == NULL)
+				{
+					AllClients = NULL;
+					do{
+						printf("voulez vous sauvgarder les changements ? \n");
+						printf("entez 1 pour valider ou 0 sinon : ");
+						scanf("%d",&choix);
+					    }while((choix != 0) && (choix != 1));
+						if(choix == 1)
+						{
+					    	RefrechClients(AllClients,"Client.txt");
+					    	printf("\nvous avez sauvgarder.\n");
+							return;
+						}
+						else if (choix == 0)
+						{
+							printf("\nvous n'avez pas sauvgarder.\n");
+							return;
+						}
+				}
+				else if(PClient == NULL)
 				{
 					AllClients = CClient -> next;
 						do{
@@ -262,7 +322,7 @@ void deleteClient(int id) // Supprimer un client dapres son ID
 						if(choix == 1){
 					    	RefrechClients(AllClients,"Client.txt");
 					    	printf("vous avez sauvgarder.\n");
-					    	return ;
+					    	return;
 				        }
 				        else if (choix == 0){
 				         printf("vous n'avez pas sauvgarder.\n");
@@ -310,6 +370,8 @@ void deleteClient(int id) // Supprimer un client dapres son ID
 					}
 				}
 			}
+			PClient = CClient;
+			CClient = CClient -> next;
 		}
 		printf("Ce Client n\'existe pas");
 		return ;
@@ -370,7 +432,7 @@ void ChercherCient()
 			{
 				if(strcmp(C->NomClient, nom) == 0)
 				{
-					printf("\n---------FF-----------------------\n");
+					printf("\n--------------------------------\n");
 					printf("Id:\t\t%i\n", C -> IdClient);
 					printf("Nom:\t\t%s\n", C -> NomClient);
 					printf("Prenom \t\t%s\n", C -> PrenomClient);
@@ -381,7 +443,7 @@ void ChercherCient()
 				}
 				C = C->next;
 			}
-			printf("\nce nom  n'existe pas'\n");
+			printf("\nRecherche termine\n");
 			return;
 		case 3:
 			printf("\nDonner le prenom du Client que vous cherchez :");
@@ -407,7 +469,7 @@ void ChercherCient()
 }
 
 
-int Client_exist(int id)
+int Client_exist(int id) // existance d'un client par son ID
 {
 	Client *All = getClients("Client.txt");
 	Client *C ;
