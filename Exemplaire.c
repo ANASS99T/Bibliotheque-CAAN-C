@@ -120,11 +120,15 @@ void AfficherTousLesExemplaires() // Afficher Tous les Exemplaire
 	else{
 		while(E != NULL)
 		{
+			if(E->IdExempl == 0)
+			{
+				printf("Il n\'y a pas des Exemplaires");
+				return;
+			}
 			printf("--------------------------------------");
 			printf("\nIdExemplaire:\t%i\n", E->IdExempl);
 			printf("\nIdLivre:\t%i\n", E->IdLivre);
 			printf("\ndisponible:\t%i\n", E->dispo);
-		;
 			E = E -> next;
 		}
 	}

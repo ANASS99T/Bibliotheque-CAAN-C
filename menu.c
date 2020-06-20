@@ -355,7 +355,7 @@ void menu()
 			else if(choix1 == 1)
 			{
 				do{
-					printf("\nPour chercher un livre entrer \"1\" et pour chercher les exemplaire entrer \"2\" : ");
+					printf("\nPour supprimer un livre entrer \"1\" et pour supprimer les exemplaire entrer \"2\" : ");
 					scanf("%d", &choix3);
 				}while(choix3 != 1 && choix3 != 2);
 				if(choix3 == 1){				
