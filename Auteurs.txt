@@ -1,0 +1,20 @@
+1:Joseph Gallian
+2:David S. Dummit
+3:Richard M. Foote
+4:Thomas H. Cormen
+5:Charles E. Leiserson
+6:Ronald L. Rivest
+7:Donald E. Knuth
+8:Jan Gullberg
+9:Brian Kernighan
+10:Bert Bates
+11:Joel Grus
+12:Voltaire
+13:Honore de Balzac
+14:Marguerite Duras
+15: Victor Hugo
+16:Susan Wise Bauer
+17:Jared Diamond
+18:William Manchester
+19:Laurence Bergreen
+20:Ahmed Sefrioui
